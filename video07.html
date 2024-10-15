@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube-Video mit QR-Code</title>
+</head>
+<body>
+    <h1>YouTube-Video mit QR-Code</h1>
+    
+    <!-- YouTube Video -->
+    <div id="video-container">
+        <iframe id="youtube-video" width="560" height="315" 
+        src="https://www.youtube.com/embed/LQSTeP5paMk?enablejsapi=1&modestbranding=1&rel=0&fs=0&controls=0"
+        frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+    </div>
+
+    <!-- QR-Code erscheint hier -->
+    <div id="qr-code-container" style="display:none; text-align:center; margin-top: 20px;">
+        <div id="qr-code"></div>
+        <p>Oder klicken Sie auf diesen <a id="qr-link" href="" target="_blank">Link</a>, um zur Zielseite zu gelangen.</p>
+    </div>
+
+    <!-- QR-Code Bibliothek -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        var player;
+        var targetUrl = "https://forms.office.com/e/v1bRs6TvqC?origin=lprLink";
+        var lastTime = 0;  // Um zu verfolgen, ob der Nutzer vorspult
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player("youtube-video", {
+                events: {
+                    "onStateChange": onPlayerStateChange,
+                    "onReady": disableControls
+                }
+            });
+        }
+
+        function disableControls() {
+            // Verhindere das Vorspulen, indem die Zeit ständig überwacht wird
+            setInterval(function () {
+                if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    var currentTime = player.getCurrentTime();
+                    if (currentTime > lastTime + 2) {
+                        player.seekTo(lastTime); // Wenn der Nutzer vorspult, springe zur vorherigen Zeit
+                    } else {
+                        lastTime = currentTime; // Aktualisiere die Zeit
+                    }
+                }
+            }, 1000);
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                generateQRCode();
+            }
+        }
+
+        function generateQRCode() {
+            var qrCodeContainer = document.getElementById("qr-code-container");
+            qrCodeContainer.style.display = "block";
+
+            var cacheBuster = "?cb=" + new Date().getTime();
+            var finalUrl = targetUrl + cacheBuster;
+
+            var qrCode = new QRCode(document.getElementById("qr-code"), {
+                text: finalUrl,
+                width: 200,
+                height: 200
+            });
+
+            document.getElementById("qr-link").href = finalUrl;
+        }
+    </script>
+</body>
+</html>
