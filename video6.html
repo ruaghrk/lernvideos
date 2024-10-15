@@ -11,8 +11,8 @@
     <!-- YouTube Video -->
     <div id="video-container">
         <iframe id="youtube-video" width="560" height="315" 
-        src="https://www.youtube.com/embed/CwUfrRKIAyk?enablejsapi=1&modestbranding=1&rel=0&controls=1&fs=0&disablekb=1"
-        frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        src="https://www.youtube.com/embed/CwUfrRKIAyk?enablejsapi=1&modestbranding=1&rel=0&fs=0&controls=0"
+        frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowfullscreen></iframe>
     </div>
 
@@ -29,6 +29,7 @@
     <script>
         var player;
         var targetUrl = "https://forms.office.com/e/EFdABRV5GB?origin=lprLink";
+        var lastTime = 0;  // Um zu verfolgen, ob der Nutzer vorspult
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player("youtube-video", {
@@ -39,15 +40,16 @@
             });
         }
 
-        function disableControls(event) {
-            // Deaktiviert das Vorspulen, indem der aktuelle Wiedergabezeitpunkt kontinuierlich überwacht wird
+        function disableControls() {
+            // Verhindere das Vorspulen, indem die Zeit ständig überwacht wird
             setInterval(function () {
                 if (player.getPlayerState() === YT.PlayerState.PLAYING) {
                     var currentTime = player.getCurrentTime();
-                    var duration = player.getDuration();
-
-                    // Wenn das Video läuft und die aktuelle Zeit größer als die vorherige Zeit ist, speichere die Zeit
-                    player.seekTo(currentTime, true); // Bleibe an der aktuellen Stelle, Vorspulen wird verhindert
+                    if (currentTime > lastTime + 2) {
+                        player.seekTo(lastTime); // Wenn der Nutzer vorspult, springe zur vorherigen Zeit
+                    } else {
+                        lastTime = currentTime; // Aktualisiere die Zeit
+                    }
                 }
             }, 1000);
         }
@@ -62,11 +64,9 @@
             var qrCodeContainer = document.getElementById("qr-code-container");
             qrCodeContainer.style.display = "block";
 
-            // Cache-Buster hinzufügen
             var cacheBuster = "?cb=" + new Date().getTime();
             var finalUrl = targetUrl + cacheBuster;
 
-            // QR-Code generieren
             var qrCode = new QRCode(document.getElementById("qr-code"), {
                 text: finalUrl,
                 width: 200,
