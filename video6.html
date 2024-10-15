@@ -10,7 +10,8 @@
     
     <!-- YouTube Video -->
     <div id="video-container">
-        <iframe id="youtube-video" width="560" height="315" src="https://www.youtube.com/embed/CwUfrRKIAyk?enablejsapi=1"
+        <iframe id="youtube-video" width="560" height="315" 
+        src="https://www.youtube.com/embed/CwUfrRKIAyk?enablejsapi=1&modestbranding=1&rel=0&controls=1&fs=0&disablekb=1"
         frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
         allowfullscreen></iframe>
     </div>
@@ -32,9 +33,23 @@
         function onYouTubeIframeAPIReady() {
             player = new YT.Player("youtube-video", {
                 events: {
-                    "onStateChange": onPlayerStateChange
+                    "onStateChange": onPlayerStateChange,
+                    "onReady": disableControls
                 }
             });
+        }
+
+        function disableControls(event) {
+            // Deaktiviert das Vorspulen, indem der aktuelle Wiedergabezeitpunkt kontinuierlich überwacht wird
+            setInterval(function () {
+                if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    var currentTime = player.getCurrentTime();
+                    var duration = player.getDuration();
+
+                    // Wenn das Video läuft und die aktuelle Zeit größer als die vorherige Zeit ist, speichere die Zeit
+                    player.seekTo(currentTime, true); // Bleibe an der aktuellen Stelle, Vorspulen wird verhindert
+                }
+            }, 1000);
         }
 
         function onPlayerStateChange(event) {
