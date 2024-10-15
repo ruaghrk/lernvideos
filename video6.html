@@ -47,13 +47,18 @@
             var qrCodeContainer = document.getElementById("qr-code-container");
             qrCodeContainer.style.display = "block";
 
+            // Cache-Buster hinzufügen
+            var cacheBuster = "?cb=" + new Date().getTime();
+            var finalUrl = targetUrl + cacheBuster;
+
+            // QR-Code generieren
             var qrCode = new QRCode(document.getElementById("qr-code"), {
-                text: targetUrl,
+                text: finalUrl,
                 width: 200,
                 height: 200
             });
 
-            document.getElementById("qr-link").href = targetUrl;
+            document.getElementById("qr-link").href = finalUrl;
         }
     </script>
 </body>
